@@ -1,4 +1,4 @@
-import { NgZone, HostListener } from '@angular/core';
+import { NgZone, HostListener,Input } from '@angular/core';
 import { ElementRef } from '@angular/core';
 import { Component, OnInit, ViewChild } from '@angular/core';
 
@@ -27,7 +27,7 @@ export class Sewers {
   private y = 0;
   private w = 20
   private heightBottom
-  private gap = 50;
+  private gap = 100;
   private heightTop;
 
   constructor(private ctx: CanvasRenderingContext2D, private canvas) {
@@ -36,7 +36,7 @@ export class Sewers {
 
     this.x = this.canvas.width,
       this.y = this.canvas.height
-    this.heightBottom = this.randomRange(50, this.canvas.height)
+    this.heightBottom = this.randomRange(this.gap, this.canvas.height)
     this.heightTop = this.canvas.height - this.heightBottom - this.gap
 
   }
@@ -83,7 +83,7 @@ export class Sewers {
   }
 
   maybeAddNewSewer() {
-    if (this.x < (2 * this.canvas.width) / 3) {
+    if (this.x < (this.canvas.width) / 3) {
       let rand = Math.floor(Math.random() * 50);
 
       //console.log(rand);
@@ -112,7 +112,7 @@ export class Sewers {
 
 }
 
-export class Square {
+export class Bird {
   private color = 'red';
   private x = 50;
   private y = 50;
@@ -136,7 +136,7 @@ export class Square {
     if (this.y <= this.z) {
       this.draw
     } else {
-      this.y = this.y - 25;
+      this.y = this.y - 50;
       this.draw();
     }
 
@@ -148,7 +148,7 @@ export class Square {
     if (this.y >= this.canvas.height - this.z) {
       this.draw();
     } else {
-      this.y = this.y + 0.5;
+      this.y = this.y + 1;
       this.draw();
     }
 
@@ -159,7 +159,7 @@ export class Square {
       this.draw()
 
     } else {
-      this.y++
+      this.y = this.y +2
       this.draw()
     }
 
@@ -203,7 +203,7 @@ export class BoardComponent implements OnInit {
       this.sewers.forEach(sewer => {
         sewer.moveLeft()
       })
-      this.square.moveUp()
+      this.bird.moveUp()
       this.ticks++
     }
     //console.log(`lastup ${this.lastUp} e ${this.ticks}`)
@@ -215,13 +215,14 @@ export class BoardComponent implements OnInit {
   requestId;
   interval;
   background;
-  square;
+  bird;
   key;
   sewers = [];
   ticks = 0;
   lastUp = 0;
   defeat = false;
   timer;
+  points;
   constructor(private ngZone: NgZone) {
 
   }
@@ -231,11 +232,12 @@ export class BoardComponent implements OnInit {
 
   ngOnInit(): void {
 
+    this.points= 0
 
     this.ctxActiveElements = this.layer2.nativeElement.getContext('2d');
     this.ctxPassiveElement = this.layer1.nativeElement.getContext('2d');
 
-    this.square = new Square(this.ctxActiveElements, this.layer2.nativeElement);
+    this.bird = new Bird(this.ctxActiveElements, this.layer2.nativeElement);
 
 
 
@@ -260,7 +262,7 @@ export class BoardComponent implements OnInit {
 
 
       this.tick();
-    }, 10);
+    }, 5);
 
 
 
@@ -277,7 +279,7 @@ export class BoardComponent implements OnInit {
     this.ctxActiveElements.clearRect(0, 0, this.layer2.nativeElement.width, this.layer2.nativeElement.height)
     this.sewers.map((sewer, index) => {
       sewer.moveLeft()
-      if (sewer.checkIfObjectsColide(this.square)) {
+      if (sewer.checkIfObjectsColide(this.bird)) {
         //console.log("should colide")
 
         this.defeat = true
@@ -296,10 +298,10 @@ export class BoardComponent implements OnInit {
     if (this.ticks - this.lastUp > 100) {
       //console.log("falling faster");
 
-      this.square.moveDownFaster()
+      this.bird.moveDownFaster()
     } else {
 /*       console.log("falling slower")
- */      this.square.moveDown();
+ */      this.bird.moveDown();
     }
     this.ticks++
 
@@ -309,7 +311,7 @@ export class BoardComponent implements OnInit {
     this.ctxActiveElements.clearRect(0, 0, this.layer2.nativeElement.width, this.layer2.nativeElement.height)
 
     this.defeat = true
-    this.square = null
+    this.bird = null
     this.sewers = []
     this.ticks = 0;
     this.lastUp = 0;
